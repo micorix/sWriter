@@ -64,9 +64,7 @@ export default class extends Component {
     this.getContents()
     onDocumentRemove(doc => {
         if(doc.id === this.state.document.id){
-            this.setState({
-                document: {}
-            })
+            this.getWelcomePage()
         }
     })
   }
@@ -105,11 +103,24 @@ export default class extends Component {
                 editorState: doc && doc.contents && Object.keys(doc.contents).length > 0 ? EditorState.createWithContent(convertFromRaw(doc.contents)) : EditorState.createEmpty()
             })
           })
+      }else{
+        this.getWelcomePage()
       }
+  }
+  getWelcomePage = () => {
+    getDocument('__special-welcome__').then(doc => {
+        console.log(doc)
+       this.setState({
+           document: doc,
+           editorState:  EditorState.createWithContent(convertFromRaw(doc.contents))
+       })
+     })
   }
   componentDidUpdate = (prevProps, prevState) => {
     if(prevProps.location.state && this.props.location.state && prevProps.location.state.docId !== this.props.location.state.docId){
         this.getContents()
+    }else if(!this.props.location.state || !this.props.location.state.docId){
+        this.getWelcomePage()
     }
   }
   handleChange = (editorState) => {
