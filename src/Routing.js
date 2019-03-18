@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom'
+import { Redirect } from 'react-router-dom'
 import EditComponent from './pages/Edit'
 import ThemeComponent from './pages/Theme'
 import CheatsheetComponent from './pages/Cheatsheet'
@@ -20,7 +20,11 @@ const routes = [
         path: '/cheatsheet',
         component: CheatsheetComponent
     },
-
+    {
+        path: '/',
+        exact: true,
+        render: () => <Redirect to='/edit'/>
+    }
 ]
 
 export default routes
