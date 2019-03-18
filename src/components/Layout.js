@@ -7,6 +7,7 @@ import ExplorerMenu from '../components/ExplorerMenu'
 import ExtensionsMenu from '../components/ExtensionsMenu'
 import ThemesMenu from './ThemesMenu';
 import { onActiveThemeChange } from '../utils/theme';
+import SettingsMenu from './SettingsMenu';
 const SiteWrapper = styled.div`
     width:100%;
     height:100%;
@@ -34,10 +35,10 @@ const MenuItem = styled.button`
     display: flex;
     align-items:center;
     justify-content: center;
-    padding: 2em 10px;
+    padding: 1.5em 10px;
     cursor:pointer;
     i{
-        font-size:3em !important;
+        font-size:2.2em !important;
         color: ${props => props.active ?  props.theme['activityBar.foreground'] : props.theme['activityBar.inactiveForeground']} !important;
     }
     &:hover i{
@@ -98,7 +99,7 @@ export default class extends Component{
                     <MenuItem onClick={() => this.setActiveTab('extensions')} active={this.state.activeTab === 'extensions'}>
                         <MaterialIcon icon="extension" />
                     </MenuItem>
-                    <MenuItem to="#">
+                    <MenuItem to="#" onClick={() => this.setActiveTab('settings')} active={this.state.activeTab === 'settings'}>
                         <MaterialIcon icon="settings" />
                     </MenuItem>
                     <MenuItemLink to="/cheatsheet">
@@ -109,6 +110,7 @@ export default class extends Component{
                    <ExplorerMenu active={this.state.activeTab === 'explorer'} />
                    <ThemesMenu active={this.state.activeTab === 'themes'} />
                    <ExtensionsMenu active={this.state.activeTab === 'extensions'} />
+                   <SettingsMenu active={this.state.activeTab === 'settings'} />
                 </SideMenu>
         
                 </MenuWrapper>

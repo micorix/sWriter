@@ -3,6 +3,7 @@ import MenuWrapper from './MenuWrapper';
 import styled from '@emotion/styled'
 import MaterialIcon from 'material-icons-react'
 import { Link } from 'react-router-dom'
+import { onDocumentsChange, createDocument, getDocuments, removeDocument } from '../utils/document';
 const List = styled.details`
     user-select: none;
     summary{
@@ -37,6 +38,7 @@ const FileEntry = styled(Link)`
     cursor:pointer;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     font-family: 'Poppins';
     padding-left:2em;
     margin-top: .8em;
@@ -46,6 +48,16 @@ const FileEntry = styled(Link)`
     }
     span[contenteditable]:focus{
         outline: 1px solid rgba(255,255,255,0.2);
+    }
+    div{
+        display: flex;
+    align-items: center;
+    }
+    .actions{
+        opacity: 0;
+    }
+    &:hover .actions{
+        opacity:1;
     }
     
 `
@@ -59,17 +71,28 @@ export default class extends Component{
     constructor(props){
         super(props)
         this.state = {
-            files
+            documents: []
         }
         this.editableFilename = React.createRef()
+        onDocumentsChange(async (docs) => {
+            // console.log(docs.toArray())
+            this.setState({
+                documents: await docs.toArray()
+            })
+        })
+        getDocuments().toArray().then(documents => {
+            this.setState({
+                documents
+            })
+        })
     }
     createNewFile = (e) => {
         e.stopPropagation()
         e.preventDefault()
         const tmpFilename = 'new file'
         this.setState(state => ({
-            files: [
-                ...state.files, {
+            documents: [
+                ...state.documents, {
                     name: tmpFilename,
                     editable: true
                 }
@@ -95,16 +118,22 @@ export default class extends Component{
         })
     }
     cleanUp = () => {
-        let files = this.state.files
-        let index = files.findIndex(file => file.editable)
+        let docs = this.state.documents
+        let index = docs.findIndex(doc => doc.editable)
         if(index >= 0){
-            files[index].editable = false
-            files[index].name = this.editableFilename.current.innerText
+            createDocument(this.editableFilename.current.innerText)
+            docs.splice(index, 1)
         }
         this.editableFilename = React.createRef()
+        
         this.setState({
-            files
+            documents: docs
         })
+    }
+    removeDoc = (e, id) => {
+        
+        removeDocument(id)
+        // e.preventDefault()
     }
     render = () => {
         return (
@@ -114,16 +143,27 @@ export default class extends Component{
                         Files
                         <Actions>
                         <MaterialIcon icon="create" onClick={this.createNewFile}/> 
-                        <MaterialIcon icon="create_new_folder"/>  
+                        {/* <MaterialIcon icon="create_new_folder"/>   */}
                         </Actions>
                     </summary>
-                    {this.state.files.map(file => {
+                    {this.state.documents.sort(doc => doc.specialPage).map(doc => {
                         return (
-                            <FileEntry to="/edit">
+                            <FileEntry to={{
+                                pathname: '/edit',
+                                state: {
+                                    docId: doc.id
+                                }
+                            }}>
+                            <div className="wrapper">
                                 <MaterialIcon icon="insert_drive_file"/> 
                                 {
-                                file.editable ? <span contentEditable={true} ref={this.editableFilename}>{file.name}</span>
-                                : <span>{file.name}</span>}
+                                doc.editable ? <span contentEditable={true} ref={this.editableFilename}>{doc.name}</span>
+                                : <span>{doc.name}</span>}
+                                </div>
+                                <div className="actions">
+                               
+                                {!doc.editable && !doc.specialPage && <MaterialIcon onClick={e => this.removeDoc(e, doc.id)} icon="remove_circle"/>  }      
+                                </div>
                             </FileEntry>
                         )
                     })}

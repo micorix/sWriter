@@ -1,49 +1,119 @@
 import React, { Component } from 'react'
-import { Editor, EditorState, RichUtils } from 'draft-js'
+import { Editor, EditorState, RichUtils, convertFromRaw, convertToRaw } from 'draft-js'
 import styled from '@emotion/styled'
 import handleHeadlines from '../utils/handleHeadlines'
 import handleInlines from '../utils/handleInlines'
 import Layout from '../components/Layout'
 import { UpdaterContext } from '../updater';
 import PageLayout from '../components/PageLayout';
+import { getDocument, changeDocumentContent, onDocumentRemove, renameDocument } from '../utils/document';
 const EditorWrapper = styled.div`
-    width:50%;
-    margin:auto;
-    padding-top:3em;
-    height:100%;
-    font-family: 'Work Sans';
-    background: ${props => props.bg};
-    color: ${props => props.fg};
+
+    line-height:2em;
 `
-const ColorsWrapper = styled.div`
-    background: ${props => props.bg};
-    color: ${props => props.fg};
-    width:100%;
-    height:100%;
+
+const DocName = styled.div`
+
+&:hover button{
+    display: block;
+}
+button{
+    cursor:pointer;
+    display: none;
+    position: absolute;
+    top:calc(50% - 8px);
+    left:100%;
+    border-radius:3px;
+    font-size:1em;
+    padding:5px;
+    border:none;
+    outline:none;
+    margin-left:2em;
+    transform: translate(0, -50%);
+}
+.wrapper{
+    border-bottom: 2px solid black;
+    display: inline-block;
+    position: relative;
+    h1{
+    outline:0;
+    display: inline-block;
+    padding-bottom:.5em;
+    
+    margin: 0 0 16px 0;
+    padding:2px;
+    border: 1px solid transparent;
+    &[contenteditable]:focus{
+        border-color: #aaa;
+    }
+    }
+    
+    
+}
 `
 export default class extends Component {
     static contextType = UpdaterContext
   constructor(props) {
     super(props);
     this.state = {
+        document: {},
         editorState: EditorState.createEmpty(),
-        editorBackground: '#fff',
-        editorForeground: '#000'
+        editName: false
     }
+    this.docNameHeadline = React.createRef()
+    this.getContents()
+    onDocumentRemove(doc => {
+        if(doc.id === this.state.document.id){
+            this.setState({
+                document: {}
+            })
+        }
+    })
   }
-  componentDidMount = () => {
-      this.context.subscribe(change => {
-          if(change === 'theme'){
-              let theme = JSON.parse(localStorage.theme).colors
-              this.setState({
-                  editorBackground: theme['editor.background'],
-                  editorForeground: theme['editor.foreground']
-              })
-          }
+  setNameEditable = () => {
+      this.setState({
+          editName: true
+      }, () => {
+        if(this.docNameHeadline.current){
+            let range = document.createRange();//Create a range (a range is a like the selection but invisible)
+            range.selectNodeContents(this.docNameHeadline.current);//Select the entire contents of the element with the range
+            range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+            let selection = window.getSelection();//get the selection object (allows you to change selection)
+            selection.removeAllRanges();//remove any selections already made
+            selection.addRange(range)
+            document.execCommand('selectAll',false,null)
+            const onKeyDown = e => {
+                if(e.key === 'Enter'){
+                    e.preventDefault()
+                    this.docNameHeadline.current.removeEventListener('keydown', onKeyDown)
+                    renameDocument(this.state.document.id, this.docNameHeadline.current.innerText)
+                    this.setState({
+                        editName: false
+                    })
+                }
+            }
+            this.docNameHeadline.current.addEventListener('keydown', onKeyDown)
+        }
       })
   }
+  getContents = () => {
+      if(this.props.location.state && this.props.location.state.docId){
+          getDocument(this.props.location.state.docId).then(doc => {
+             console.log(doc)
+            this.setState({
+                document: doc,
+                editorState: doc && doc.contents && Object.keys(doc.contents).length > 0 ? EditorState.createWithContent(convertFromRaw(doc.contents)) : EditorState.createEmpty()
+            })
+          })
+      }
+  }
+  componentDidUpdate = (prevProps, prevState) => {
+    if(prevProps.location.state && this.props.location.state && prevProps.location.state.docId !== this.props.location.state.docId){
+        this.getContents()
+    }
+  }
   handleChange = (editorState) => {
-      console.log(editorState)
+     
    
         let selectionState = editorState.getSelection();
         let anchorKey = selectionState.getAnchorKey();
@@ -52,28 +122,39 @@ export default class extends Component {
         let state = handleHeadlines(editorState, currentContentBlock)
         state = handleInlines(state ? state : editorState, currentContentBlock)
         if(state){
-            this.setState({
-                editorState: state
-            }, () => {
+            this.saveDocument(state).then(() => {
                 let sel = this.state.editorState.getSelection()
                 sel.merge({
                     anchorOffset: sel.getFocusKey(),
                     focusOffset: sel.getFocusKey()
                 })
-                this.setState({
-                    editorState: EditorState.acceptSelection(this.state.editorState, sel)
-                })
+                this.saveDocument(EditorState.acceptSelection(this.state.editorState, sel))
             })
  
   }
 }
+    saveDocument = (editorState) => new Promise(resolve => {
+        console.log(JSON.stringify(convertToRaw(editorState.getCurrentContent())))
+        this.setState({
+            editorState
+        }, () => {
+            resolve(changeDocumentContent(this.state.document.id, convertToRaw(editorState.getCurrentContent())))
+        })
+    })
   render() {
+      let doc = this.state.document
     return (
       
             <PageLayout>
-       
-        <Editor editorState={this.state.editorState} onChange={this.handleChange}/>
-      
+       <DocName>
+           <div className="wrapper">
+    <h1 contentEditable={this.state.editName} ref={this.docNameHeadline}>{doc && doc.name}</h1>
+    { (!this.state.editName && !(doc && doc.specialPage)) && <button onClick={this.setNameEditable}>Rename</button>}
+    </div>
+       </DocName>
+       <EditorWrapper>
+        <Editor editorState={this.state.editorState} onChange={this.handleChange} readOnly={doc && doc.specialPage}/>
+        </EditorWrapper>
         </PageLayout>
        
     );
