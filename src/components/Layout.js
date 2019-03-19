@@ -17,6 +17,9 @@ const RouteWrapper = styled.div`
     width:${props => props.activeTab ? '75vw' : '95vw'};
     float:right;
     height:100%;
+    @media print{
+        width:100%;
+    }
     
 `
 const ActivityBar = styled.aside`
@@ -52,7 +55,9 @@ const MenuWrapper = styled.div`
     left: 0;
     display: flex;
     height:100%;
-    
+    @media print{
+        display: none;
+    }
   
 `
 const SideMenu = styled.div`
@@ -62,6 +67,7 @@ const SideMenu = styled.div`
     width:20vw;
     display: ${props => props.active ? 'block' : 'none'};
     position: relative;
+    
 `
 const MenuItemLink = MenuItem.withComponent(Link)
 export default class extends Component{

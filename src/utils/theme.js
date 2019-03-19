@@ -65,16 +65,16 @@ export const getInstalledThemes = () => db.installedThemes
 
 export const useTheme = (themeId) => {
     return getInstalledThemes().toCollection().modify(theme => {
-        theme.active = false
+        theme.active = 0
     }).then(() => {
         getInstalledThemes().where('id').equals(themeId).modify(theme => {
-            theme.active = true
+            theme.active = 1
         }).catch(e => console.log(e, 2))
     }).catch(e => console.log(e))
 }
 export const onActiveThemeChange = (fn) => {
     db.installedThemes.hook('updating', (mods, primKey, obj, trans) => {
-        if (mods.hasOwnProperty('active') && mods.active === true) {
+        if (mods.hasOwnProperty('active') && mods.active === 1) {
          fn(obj)
         }
       })
@@ -87,3 +87,4 @@ export const onInstalledThemesChange = (fn) => {
         this.onsuccess = () => fn(getInstalledThemes())
     })
 }
+export const getActiveTheme = () => getInstalledThemes().get({active: 1})

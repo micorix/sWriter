@@ -7,12 +7,9 @@ import Layout from './components/Layout'
 import routes from './Routing';
 import defaultTheme from './utils/defaultTheme'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
-import { onActiveThemeChange } from './utils/theme';
-const theme = {
-  'activityBar.background': 'red',
-  'activityBar.foreground': 'green',
-  'activityBar.foregroundInactive': 'blue',
-}
+import { onActiveThemeChange, getActiveTheme } from './utils/theme';
+import { onAppearanceSettingsChange, getAppearanceConfigObj } from './utils/appearanceSettings';
+
 const App = props => (
   <UpdaterProvider value={new Subject()}>
     <InnerApp />
@@ -28,8 +25,37 @@ class InnerApp extends Component {
     onActiveThemeChange(theme => {
       console.log(theme)
       this.setState({
-          theme: theme.details.colors
+          theme: {
+            appearance: this.state.theme.appearance,
+            ...theme.details.colors
+          }
       })
+  })
+  getActiveTheme().then(theme => {
+    console.log('active', theme)
+    this.setState({
+      theme: {
+        ...this.state.theme,
+        ...theme.details.colors
+      }
+    })
+  })
+  onAppearanceSettingsChange(appearance => {
+    console.log(appearance)
+    this.setState({
+      theme: {
+        ...this.state.theme,
+        appearance
+      }
+    })
+  })
+  getAppearanceConfigObj().then(appearance => {
+    this.setState({
+      theme: {
+        ...this.state.theme,
+        appearance
+      }
+    })
   })
   }
   render() {

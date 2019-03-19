@@ -9,7 +9,7 @@ import PageLayout from '../components/PageLayout';
 import { getDocument, changeDocumentContent, onDocumentRemove, renameDocument } from '../utils/document';
 const EditorWrapper = styled.div`
 
-    line-height:2em;
+   
 `
 
 const DocName = styled.div`

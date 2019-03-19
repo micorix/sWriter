@@ -20,6 +20,9 @@ const CheatsheetWrapper = styled.div`
     img{
         max-width:100%;
     }
+    code{
+        font-family: ${props => props.theme.appearance && props.theme.appearance.codeFont ? props.theme.appearance.codeFont : 'initial'};
+    }
 `
 const Header = styled.header`
     border-bottom:3px solid black;

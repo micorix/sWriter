@@ -13,9 +13,14 @@ const ChildrenWrapper = styled.div`
     margin:auto;
     padding-top:3em;
     height:100%;
-    font-family: 'Work Sans';
-    background: ${props => props.bg};
-    color: ${props => props.fg};
+    line-height:2em;
+    code{
+        font-family: ${props => props.theme.appearance && props.theme.appearance.codeFont ? props.theme.appearance.codeFont : 'initial'};
+    }
+    font-family: ${props => props.theme.appearance && props.theme.appearance.secondaryFont ? props.theme.appearance.secondaryFont : 'initial'};
+    @media print{
+        width: calc(100% - 4em);
+    }
 `
 export default class extends Component {
     static contextType = UpdaterContext

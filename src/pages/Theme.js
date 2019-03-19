@@ -128,7 +128,7 @@ export default class extends Component {
                             this.state.themes.map(theme => (
                                 <li>
                                 <span>{theme.label}</span>
-                                <button className="install" onClick={e => this.installTheme(theme)}>Use theme</button>
+                                <button className="install" onClick={e => this.installTheme(theme)}>Install theme</button>
                                 </li>
                             ))
                         }

@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { getThemes } from '../utils/themes'
 import { UpdaterContext } from '../updater';
 import { getInstalledThemes, useTheme, removeTheme, onInstalledThemesChange } from '../utils/theme';
+import { setConfig, onAppearanceSettingsChange, getConfigObject, getAppearanceConfigObj } from '../utils/appearanceSettings';
 
 const Section = styled.section`
     width:calc(100% - 2em);
@@ -33,27 +34,56 @@ export default class extends Component{
     constructor(props){
         super(props)
         this.state = {
-            themes: [],
-            query: ''
+            primaryFont: '',
+                secondaryFont: '',
+                codeFont: ''
         }
       
-        
+        // onAppearanceSettingsChange(appearance => {
+        //     this.setState({
+        //       appearance
+        //     })
+        //   })
+          getAppearanceConfigObj().then(appearance => {
+            this.setState({
+                ...appearance
+              })
+          })
     }
     
+    handlePrimaryFontChange = (e) => {
+        let val = e.target.value
+        this.setState({
+            primaryFont: val
+        }, () => setConfig('primaryFont', val))
+        
+    }
+    handleSecondaryFontChange = (e) => {
+        let val = e.target.value
+        this.setState({
+            secondaryFont: val
+        }, () => setConfig('secondaryFont', val))
+    }
+    handleCodeFontChange = (e) => {
+        let val = e.target.value
+        this.setState({
+            codeFont: val
+        }, () => setConfig('codeFont', val))
+    }
     render = () => {
         return (
             <MenuWrapper title="Settings" active={this.props.active}>
             <Section>
                 <label>Primary font</label>
-                <input type="input" />
+                <input type="input" onChange={this.handlePrimaryFontChange} value={this.state.primaryFont} />
             </Section>
             <Section>
                 <label>Secondary font</label>
-                <input type="input" />
+                <input type="input" onChange={this.handleSecondaryFontChange} value={this.state.secondaryFont}/>
             </Section>
             <Section>
                 <label>Code font</label>
-                <input type="input" />
+                <input type="input" onChange={this.handleCodeFontChange} value={this.state.codeFont}/>
             </Section>
             <Section>
                 <label>Text font size</label>
