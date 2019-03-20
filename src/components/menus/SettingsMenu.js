@@ -1,12 +1,9 @@
 import React, {Component} from 'react'
-import MenuWrapper from './MenuWrapper';
 import styled from '@emotion/styled'
-import MaterialIcon from 'material-icons-react'
-import { Link } from 'react-router-dom'
-import { getThemes } from '../utils/themes'
-import { UpdaterContext } from '../updater';
-import { getInstalledThemes, useTheme, removeTheme, onInstalledThemesChange } from '../utils/theme';
-import { setConfig, onAppearanceSettingsChange, getConfigObject, getAppearanceConfigObj } from '../utils/appearanceSettings';
+
+import MenuWrapper from './MenuWrapper'
+
+import { setConfig, getAppearanceConfigObj } from '../../utils/db/wrappers/appearanceSettings'
 
 const Section = styled.section`
     width:calc(100% - 2em);

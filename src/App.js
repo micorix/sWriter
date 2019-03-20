@@ -1,80 +1,63 @@
-import React, { Component } from 'react';
-import Routing from './Routing'
-import { ThemeProvider } from 'emotion-theming'
-import { Subject } from 'rxjs'
-import { UpdaterProvider, UpdaterContext } from './updater'
-import Layout from './components/Layout'
-import routes from './Routing';
-import defaultTheme from './utils/defaultTheme'
+import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
-import { onActiveThemeChange, getActiveTheme } from './utils/theme';
-import { onAppearanceSettingsChange, getAppearanceConfigObj } from './utils/appearanceSettings';
+import { ThemeProvider } from 'emotion-theming'
+import 'normalize.css'
+import { Global } from '@emotion/core'
 
-const App = props => (
-  <UpdaterProvider value={new Subject()}>
-    <InnerApp />
-  </UpdaterProvider>
-);
-class InnerApp extends Component {
-  static contextType = UpdaterContext
+import globalStyles from './globalStyles'
+
+import routes from './routes'
+
+import Layout from './components/layouts/Layout'
+
+import defaultTheme from './utils/defaultTheme'
+import { onActiveThemeChange, getActiveTheme } from './utils/db/wrappers/theme'
+import { onAppearanceSettingsChange, getAppearanceConfigObj } from './utils/db/wrappers/appearanceSettings'
+
+export default class App extends Component {
   constructor(props){
     super(props)
     this.state = {
       theme: defaultTheme
-    }
-    onActiveThemeChange(theme => {
-      console.log(theme)
-      this.setState({
-          theme: {
-            appearance: this.state.theme.appearance,
-            ...theme.details.colors
-          }
-      })
-  })
-  getActiveTheme().then(theme => {
-    console.log('active', theme)
+    } 
+    getActiveTheme().then(this.setupTheme)
+    getAppearanceConfigObj().then(this.setupAppearanceSettings)
+
+    onActiveThemeChange(this.setupTheme)
+    onAppearanceSettingsChange(this.setupAppearanceSettings)
+  }
+  setupTheme = (theme) => {
+    if(!theme)
+      return
     this.setState({
       theme: {
+        ...defaultTheme,
         ...this.state.theme,
-        ...theme.details.colors
+        colors: theme.details.colors
       }
     })
-  })
-  onAppearanceSettingsChange(appearance => {
-    console.log(appearance)
+  }
+  setupAppearanceSettings = (appearance) => {
     this.setState({
       theme: {
+        ...defaultTheme,
         ...this.state.theme,
-        appearance
+        ...appearance
       }
     })
-  })
-  getAppearanceConfigObj().then(appearance => {
-    this.setState({
-      theme: {
-        ...this.state.theme,
-        appearance
-      }
-    })
-  })
   }
   render() {
     return (
-    
       <ThemeProvider theme={this.state.theme}>
+      <Global styles={globalStyles} />
       <Router>
       <Layout>
-      
         <Switch>
             {routes.map(routeDetails => <Route {...routeDetails} />)}
         </Switch>
-    
       </Layout>
       </Router>
       </ThemeProvider>
-   
-    );
+    )
   }
 }
-
-export default InnerApp;

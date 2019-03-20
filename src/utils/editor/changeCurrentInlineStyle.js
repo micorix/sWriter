@@ -15,11 +15,13 @@ const changeCurrentInlineStyle = (editorState, matchArr, style) => {
     focusOffset: focusOffset+matchArr[3].length
   });
   let text = block.getText().slice(index, focusOffset)
-//   if(text.startsWith())
+  if(currentInlineStyle === newStyle){
+    return editorState
+  }
   let newContentState = Modifier.replaceText(
     currentContent,
     wordSelection,
-    matchArr[1]+matchArr[2],
+    matchArr[1]+matchArr[2]+matchArr[3],
     newStyle
   );
   newContentState = Modifier.insertText(

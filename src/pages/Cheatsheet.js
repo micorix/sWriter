@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from '@emotion/styled'
-import PageLayout from '../components/PageLayout';
+import PageLayout from '../components/layouts/PageLayout';
 import ReactMarkdown from 'react-markdown'
 import Lowlight from 'react-lowlight'
 

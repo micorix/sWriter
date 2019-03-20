@@ -1,19 +1,16 @@
 import React, { Component } from 'react'
-import { Editor, EditorState, RichUtils, convertFromRaw, convertToRaw } from 'draft-js'
 import styled from '@emotion/styled'
-import handleHeadlines from '../utils/handleHeadlines'
-import handleInlines from '../utils/handleInlines'
-import Layout from '../components/Layout'
-import { UpdaterContext } from '../updater';
-import PageLayout from '../components/PageLayout';
-import { getDocument, changeDocumentContent, onDocumentRemove, renameDocument } from '../utils/document';
-const EditorWrapper = styled.div`
+import { Editor, EditorState, convertFromRaw, convertToRaw } from 'draft-js'
 
-   
-`
+import PageLayout from '../components/layouts/PageLayout'
+
+import handleHeadlines from '../utils/editor/handleHeadlines'
+import handleInlines from '../utils/editor/handleInlines'
+import { setCurrentDocument, changeDocumentContent, onDocumentRemove, renameDocument, onCurrentDocumentChange, unselectCurrentDocument, getCurrentDocument } from '../utils/db/wrappers/document'
+
+const EditorWrapper = styled.div``
 
 const DocName = styled.div`
-
 &:hover button{
     display: block;
 }
@@ -52,7 +49,6 @@ button{
 }
 `
 export default class extends Component {
-    static contextType = UpdaterContext
   constructor(props) {
     super(props);
     this.state = {
@@ -61,11 +57,31 @@ export default class extends Component {
         editName: false
     }
     this.docNameHeadline = React.createRef()
-    this.getContents()
+    // this.getContents()
     onDocumentRemove(doc => {
         if(doc.id === this.state.document.id){
+            unselectCurrentDocument()
             this.getWelcomePage()
         }
+    })
+    onCurrentDocumentChange(this.setupDocument)
+  }
+  componentDidMount = () => {
+    getCurrentDocument().then(doc =>{
+        if(doc){
+            this.setupDocument(doc)
+        }else{
+            this.getWelcomePage()
+        }
+    })
+  }
+  componentWillUnmount = () => {
+      unselectCurrentDocument()
+  }  
+  setupDocument = (doc) => {
+    this.setState({
+        document: doc,
+        editorState: doc && doc.contents && Object.keys(doc.contents).length > 0 ? EditorState.createWithContent(convertFromRaw(doc.contents)) : EditorState.createEmpty()
     })
   }
   setNameEditable = () => {
@@ -94,34 +110,14 @@ export default class extends Component {
         }
       })
   }
-  getContents = () => {
-      if(this.props.location.state && this.props.location.state.docId){
-          getDocument(this.props.location.state.docId).then(doc => {
-             console.log(doc)
-            this.setState({
-                document: doc,
-                editorState: doc && doc.contents && Object.keys(doc.contents).length > 0 ? EditorState.createWithContent(convertFromRaw(doc.contents)) : EditorState.createEmpty()
-            })
-          })
-      }else{
-        this.getWelcomePage()
-      }
-  }
   getWelcomePage = () => {
-    getDocument('__special-welcome__').then(doc => {
+    setCurrentDocument('__special-welcome__').then(doc => {
         console.log(doc)
        this.setState({
            document: doc,
            editorState:  EditorState.createWithContent(convertFromRaw(doc.contents))
        })
      })
-  }
-  componentDidUpdate = (prevProps, prevState) => {
-    if(prevProps.location.state && this.props.location.state && prevProps.location.state.docId !== this.props.location.state.docId){
-        this.getContents()
-    }else if(!this.props.location.state || !this.props.location.state.docId){
-        this.getWelcomePage()
-    }
   }
   handleChange = (editorState) => {
      
@@ -132,6 +128,7 @@ export default class extends Component {
         let currentContentBlock = currentContent.getBlockForKey(anchorKey);
         let state = handleHeadlines(editorState, currentContentBlock)
         state = handleInlines(state ? state : editorState, currentContentBlock)
+        console.log(currentContent.getPlainText())
         if(state){
             this.saveDocument(state).then(() => {
                 let sel = this.state.editorState.getSelection()

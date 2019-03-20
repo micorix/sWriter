@@ -1,32 +1,32 @@
 import React, { Component } from 'react'
-import styled from '@emotion/styled'
 import { Link } from 'react-router-dom'
+import styled from '@emotion/styled'
 import MaterialIcon from 'material-icons-react'
-import { getThemes } from '../utils/themes'
-import ExplorerMenu from '../components/ExplorerMenu'
-import ExtensionsMenu from '../components/ExtensionsMenu'
-import ThemesMenu from './ThemesMenu';
-import { onActiveThemeChange } from '../utils/theme';
-import SettingsMenu from './SettingsMenu';
+
+import FileMenu from '../menus/FileMenu'
+import ExplorerMenu from '../menus/ExplorerMenu'
+import ExtensionsMenu from '../menus/ExtensionsMenu'
+import ThemesMenu from '../menus/ThemesMenu'
+import SettingsMenu from '../menus/SettingsMenu'
+
 const SiteWrapper = styled.div`
     width:100%;
     height:100%;
- 
 `
-const RouteWrapper = styled.div`
-    width:${props => props.activeTab ? '75vw' : '95vw'};
-    float:right;
+const MenuWrapper = styled.div`
+    position: fixed;
+    top:0;
+    left: 0;
+    display: flex;
     height:100%;
     @media print{
-        width:100%;
+        display: none;
     }
-    
 `
 const ActivityBar = styled.aside`
     width:5vw;
     height:100%;
-    background:${props => props.theme['activityBar.background']};
-    // border-right:5px solid black;
+    background:${props => props.theme.colors['activityBar.background']};
 `
 const MenuItem = styled.button`
     all:unset;
@@ -38,66 +38,60 @@ const MenuItem = styled.button`
     display: flex;
     align-items:center;
     justify-content: center;
-    padding: 1.5em 10px;
+    padding: 1.5em 0;
     cursor:pointer;
     i{
         font-size:2.2em !important;
-        color: ${props => props.active ?  props.theme['activityBar.foreground'] : props.theme['activityBar.inactiveForeground']} !important;
+        color: ${props => props.active ?  props.theme.colors['activityBar.foreground'] : props.theme.colors['activityBar.inactiveForeground']} !important;
     }
     &:hover i{
         color:#d7dae0 !important;
     }
    
 `
-const MenuWrapper = styled.div`
-    position: fixed;
-    top:0;
-    left: 0;
-    display: flex;
-    height:100%;
-    @media print{
-        display: none;
-    }
-  
-`
+const MenuItemLink = MenuItem.withComponent(Link)
+
+
 const SideMenu = styled.div`
-    background: ${({theme}) => theme['sideBar.background']};
-    color: ${({theme}) => theme['sideBar.foreground']};
+    background: ${({theme}) => theme.colors['sideBar.background']};
+    color: ${({theme}) => theme.colors['sideBar.foreground']};
     height:100%;
     width:20vw;
     display: ${props => props.active ? 'block' : 'none'};
     position: relative;
-    
 `
-const MenuItemLink = MenuItem.withComponent(Link)
+
+const RouteWrapper = styled.div`
+    width:${props => props.activeTab ? '75vw' : '95vw'};
+    float:right;
+    height:100%;
+    @media print{
+        width:100%;
+    }
+`
+
 export default class extends Component{
     constructor(props){
         super(props)
         this.state = {
             activeTab: null
         }
-  
     }
     setActiveTab = (tab) => {
-        if(this.state.activeTab === tab){
-            this.setState({
-                activeTab: null
-            })
-        }else{
-            this.setState({
-                activeTab: tab
-            })
-        }
+        this.setState({
+            activeTab: this.state.activeTab === tab ? null : tab
+        })
     }
     render = () => {
-        
-    
         return (
             <SiteWrapper>
                 <MenuWrapper>
                 <ActivityBar>
+                    <MenuItem onClick={() => this.setActiveTab('file')} active={this.state.activeTab === 'file'}>
+                        <MaterialIcon icon="insert_drive_file" />
+                    </MenuItem>
                     <MenuItem onClick={() => this.setActiveTab('explorer')} active={this.state.activeTab === 'explorer'}>
-                        <MaterialIcon icon="file_copy" />
+                        <MaterialIcon icon="explore" />
                     </MenuItem>
                     <MenuItem onClick={() => this.setActiveTab('themes')} active={this.state.activeTab === 'themes'}>
                         <MaterialIcon icon="color_lens" />
@@ -105,18 +99,20 @@ export default class extends Component{
                     <MenuItem onClick={() => this.setActiveTab('extensions')} active={this.state.activeTab === 'extensions'}>
                         <MaterialIcon icon="extension" />
                     </MenuItem>
-                    <MenuItem to="#" onClick={() => this.setActiveTab('settings')} active={this.state.activeTab === 'settings'}>
+                    <MenuItem onClick={() => this.setActiveTab('settings')} active={this.state.activeTab === 'settings'}>
                         <MaterialIcon icon="settings" />
                     </MenuItem>
                     <MenuItemLink to="/cheatsheet">
                         <MaterialIcon icon="help" />
                     </MenuItemLink>
                 </ActivityBar>
+
                 <SideMenu active={Boolean(this.state.activeTab)}>
-                   <ExplorerMenu active={this.state.activeTab === 'explorer'} />
-                   <ThemesMenu active={this.state.activeTab === 'themes'} />
-                   <ExtensionsMenu active={this.state.activeTab === 'extensions'} />
-                   <SettingsMenu active={this.state.activeTab === 'settings'} />
+                    <FileMenu active={this.state.activeTab === 'file'} />
+                    <ExplorerMenu active={this.state.activeTab === 'explorer'} />
+                    <ThemesMenu active={this.state.activeTab === 'themes'} />
+                    <ExtensionsMenu active={this.state.activeTab === 'extensions'} />
+                    <SettingsMenu active={this.state.activeTab === 'settings'} />
                 </SideMenu>
         
                 </MenuWrapper>

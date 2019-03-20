@@ -1,4 +1,4 @@
-export const getThemes = (query) => new Promise((resolve, reject) => {
+export const fetchThemes = (query) => new Promise((resolve, reject) => {
     fetch("https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery", {
         method: "POST",
         mode: "cors",

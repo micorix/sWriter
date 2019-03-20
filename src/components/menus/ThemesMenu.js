@@ -1,22 +1,11 @@
 import React, {Component} from 'react'
-import MenuWrapper from './MenuWrapper';
-import styled from '@emotion/styled'
-import MaterialIcon from 'material-icons-react'
 import { Link } from 'react-router-dom'
-import { getThemes } from '../utils/themes'
-import { UpdaterContext } from '../updater';
-import { getInstalledThemes, useTheme, removeTheme, onInstalledThemesChange } from '../utils/theme';
-const SearchInput = styled.input`
-    border: 1px solid #aaa;
-    background: transparent;
-    padding:5px;
-    width:75%;
-    margin: auto;
-    display: block;
-    font-size:1.2em;
-    color: white;
-    outline: none;
-`
+import styled from '@emotion/styled'
+
+import MenuWrapper from './MenuWrapper'
+
+import { getInstalledThemes, useTheme, removeTheme, onInstalledThemesChange } from '../../utils/db/wrappers/theme'
+
 const Results = styled.div`
     height: 100%;
     overflow-y:auto;
@@ -80,7 +69,6 @@ const StyledMenuWrapper = styled(MenuWrapper)`
     position: relative;
 `
 export default class extends Component{
-    static contextType = UpdaterContext
     constructor(props){
         super(props)
         this.state = {

@@ -1,15 +1,18 @@
 import React, {Component} from 'react'
-import MenuWrapper from './MenuWrapper';
+import { Redirect } from 'react-router-dom'
 import styled from '@emotion/styled'
 import MaterialIcon from 'material-icons-react'
-import { Link } from 'react-router-dom'
-import { onDocumentsChange, createDocument, getDocuments, removeDocument } from '../utils/document';
+
+import MenuWrapper from './MenuWrapper';
+
+import { onDocumentsChange, createDocument, getDocuments, removeDocument, setCurrentDocument } from '../../utils/db/wrappers/document'
+
 const List = styled.details`
     user-select: none;
     summary{
         cursor: pointer;
-        background:${props => props.theme['sideBarSectionHeader.background']}; 
-        color:${props => props.theme['sideBarSectionHeader.foreground']}; 
+        background:${props => props.theme.colors['sideBarSectionHeader.background']}; 
+        color:${props => props.theme.colors['sideBarSectionHeader.foreground']}; 
         outline:none;
         padding: 5px 1em;
         font-family: 'Poppins';
@@ -33,7 +36,7 @@ const Actions = styled.div`
         margin: 0 10px;
     }
 `
-const FileEntry = styled(Link)`
+const FileEntry = styled.div`
     all:unset;
     cursor:pointer;
     display: flex;
@@ -62,20 +65,15 @@ const FileEntry = styled(Link)`
     
 `
 
-let files = [
-    {
-        name: 'rozprawka.md'
-    }
-]
 export default class extends Component{
     constructor(props){
         super(props)
         this.state = {
-            documents: []
+            documents: [],
+            redirect: false
         }
         this.editableFilename = React.createRef()
         onDocumentsChange(async (docs) => {
-            // console.log(docs.toArray())
             this.setState({
                 documents: await docs.toArray()
             })
@@ -131,11 +129,24 @@ export default class extends Component{
         })
     }
     removeDoc = (e, id) => {
-        
+        e.stopPropagation()
         removeDocument(id)
-        // e.preventDefault()
+    }
+    goToDoc = (id) => {
+        setCurrentDocument(id).then(() => {
+            this.setState({
+                redirect: true
+            }, () => {
+                this.setState({
+                    redirect: false
+                })
+            })
+        })
     }
     render = () => {
+        if(this.state.redirect)
+            return <Redirect to="/edit" />
+
         return (
             <MenuWrapper title="Explorer" active={this.props.active}>
                 <List>
@@ -148,12 +159,7 @@ export default class extends Component{
                     </summary>
                     {this.state.documents.sort(doc => doc.specialPage).map(doc => {
                         return (
-                            <FileEntry to={{
-                                pathname: '/edit',
-                                state: {
-                                    docId: doc.id
-                                }
-                            }}>
+                            <FileEntry onClick={() => this.goToDoc(doc.id)}>
                             <div className="wrapper">
                                 <MaterialIcon icon="insert_drive_file"/> 
                                 {

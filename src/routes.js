@@ -1,8 +1,10 @@
 import React from 'react'
 import { Redirect } from 'react-router-dom'
+
 import EditComponent from './pages/Edit'
 import ThemeComponent from './pages/Theme'
 import CheatsheetComponent from './pages/Cheatsheet'
+
 const routes = [
     {
         path: '/edit',

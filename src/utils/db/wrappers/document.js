@@ -1,4 +1,4 @@
-import db from "./db";
+import db from "../db";
 
 export const getDocuments = () => db.documents
 
@@ -35,3 +35,24 @@ export const onDocumentRemove = (fn) => {
         fn(obj)
     })
 }
+export const getCurrentDocument = () => db.documents.get({active: 1})
+
+export const onCurrentDocumentChange = (fn) => {
+    db.documents.hook('updating', function(mods, primKey, obj, trans) {
+        if (mods.hasOwnProperty('active')) {
+         this.onsuccess = () => getCurrentDocument().then(fn)
+        }
+      })
+}
+export const unselectCurrentDocument = () => db.documents.where('active').equals(1).modify(doc => {
+    doc.active = 0
+})
+export const setCurrentDocument = (id) => new Promise(resolve => {
+    unselectCurrentDocument().then(() => {
+        db.documents.where('id').equals(id).modify(doc => {
+            doc.active = 1
+        }).then(() => {
+            getCurrentDocument().then(resolve)
+        })
+    })
+})

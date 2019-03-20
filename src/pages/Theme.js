@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import styled from '@emotion/styled'
-import { UpdaterContext } from '../updater';
-import PageLayout from '../components/PageLayout';
 import ReactMarkdown from 'react-markdown'
-import { getMarketplaceResource, getAvailableThemes, installTheme } from '../utils/theme';
+
+import PageLayout from '../components/layouts/PageLayout'
+
+import { getMarketplaceResource, getAvailableThemes, installTheme } from '../utils/db/wrappers/theme'
 
 const ReadmeWrapper = styled.div`
     width:100%;
@@ -65,7 +66,6 @@ const Header = styled.header`
     }
 `
 export default class extends Component {
-    static contextType = UpdaterContext
   constructor(props) {
     super(props);
     this.state = {

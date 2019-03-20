@@ -1,4 +1,4 @@
-import { Editor, EditorState, RichUtils } from 'draft-js'
+import { RichUtils } from 'draft-js'
 
 const headlineIndicators = {
     '#': 'header-one',

@@ -1,10 +1,11 @@
-import React, {Component} from 'react'
-import MenuWrapper from './MenuWrapper';
-import styled from '@emotion/styled'
-import MaterialIcon from 'material-icons-react'
+import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import { getThemes } from '../utils/themes'
-import { UpdaterContext } from '../updater';
+import styled from '@emotion/styled'
+
+import MenuWrapper from './MenuWrapper'
+
+import { fetchThemes } from '../../utils/fetchThemes'
+
 const SearchInput = styled.input`
     border: 1px solid #aaa;
     background: transparent;
@@ -69,21 +70,20 @@ const StyledMenuWrapper = styled(MenuWrapper)`
     position: relative;
 `
 export default class extends Component{
-    static contextType = UpdaterContext
     constructor(props){
         super(props)
         this.state = {
             themes: [],
             query: ''
         }
-        this.getThemes()
+        this.fetchThemes()
     }
-    getThemes = () => {
-        getThemes(this.state.query.trim()).then(themes => this.setState({themes}))
+    fetchThemes = () => {
+        fetchThemes(this.state.query.trim()).then(themes => this.setState({themes}))
     }
     handleSubmit = (e) => {
         e.preventDefault()
-        this.getThemes()
+        this.fetchThemes()
     }
     handleChange = (e) => {
         this.setState({
